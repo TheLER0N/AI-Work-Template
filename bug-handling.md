@@ -1,4 +1,4 @@
-# 🐛 Правила обработки багов — KING Browser
+# 🐛 Правила обработки багов — [НАЗВАНИЕ_ПРОЕКТА]
 
 > Если у приложения баг — следуй ЭТИМ правилам. Не импровизируй.
 
@@ -6,9 +6,9 @@
 
 ## 🚨 КРИТИЧЕСКОЕ ПРАВИЛО: НЕ ЛОМАЙ РАБОЧЕЕ
 
-1. **Перед любым изменением** — сделай `git add -A && git commit -m "checkpoint"`
-2. **После каждого изменения** — запусти `dotnet build` → если ошибка, отмени изменения
-3. **После успешной сборки** — запусти `dotnet run` → проверь что окно появляется
+1. **Перед любым изменением** — сделай `[КОМАНДА_COMMIT]`
+2. **После каждого изменения** — запусти `[КОМАНДА_СБОРКИ]` → если ошибка, отмени изменения
+3. **После успешной сборки** — запусти `[КОМАНДА_ЗАПУСКА]` → проверь что работает
 4. **Если приложение НЕ запускается** — НЕ добавляй новые изменения, а откатывай последнее
 
 ---
@@ -18,42 +18,30 @@
 ### Шаг 1: Диагностика (НЕ менять код!)
 
 ```
-1. taskkill /F /IM GhostBrowser.exe
-2. dotnet clean && dotnet restore && dotnet build
-3. Запустить bin\Debug\net7.0-windows\GhostBrowser.exe
+1. [КОМАНДА_ОСТАНОВКИ_ПРОЦЕССА]
+2. [КОМАНДА_ОЧИСТКИ_И_СБОРКИ]
+3. Запустить приложение
 4. Проверить:
-   - Процесс есть? → tasklist | findstr GhostBrowser
-   - MainWindowHandle != 0? → PowerShell команда ниже
-   - Окно видимо? → AppActivate
-   - Есть ли MessageBox с ошибкой? → активировать окно
+   - Процесс есть? → [КОМАНДА_ПРОВЕРКИ]
+   - Окно видимо? → [КОМАНДА_ПРОВЕРКИ]
+   - Есть ли сообщение с ошибкой? → [ДЕЙСТВИЕ]
 ```
 
-**PowerShell команды:**
-```powershell
-# Проверить MainWindowHandle
-Get-Process | Where-Object {$_.ProcessName -like '*Ghost*'} | Select-Object Id, MainWindowTitle, MainWindowHandle
-
-# Активировать окно (если есть)
-Add-Type -AssemblyName Microsoft.VisualBasic
-[Microsoft.VisualBasic.Interaction]::AppActivate('KING')
-[Microsoft.VisualBasic.Interaction]::AppActivate('KING Browser — Ошибка')
-```
-
-### Шаг 2: Если MainWindowHandle = 0 (процесс есть, окна нет)
+### Шаг 2: Если процесс есть, окна нет
 
 **Причины (по вероятности):**
-1. XAML parsing error → проверить через App.xaml.cs DispatcherUnhandledException
-2. WebView2 инициализация падает → проверить %APPDATA%\GhostBrowser
-3. Missing ресурс (KING.png, кисть, стиль) → проверить output директорию
+1. [ПРИЧИНА_1] → проверить [ЧТО]
+2. [ПРИЧИНА_2] → проверить [ЧТО]
+3. [ПРИЧИНА_3] → проверить [ЧТО]
 
 **Действия:**
 ```
-1. Убедиться что KING.png есть в bin\Debug\net7.0-windows\
-2. Запустить через dotnet run 2>&1 и смотреть вывод
-3. Проверить app_error.log если есть
+1. Убедиться что [ПРОВЕРКА_1]
+2. Запустить через [КОМАНДА] и смотреть вывод
+3. Проверить [ЛОГИ/ФАЙЛЫ] если есть
 ```
 
-### Шаг 3: Если есть MessageBox с ошибкой
+### Шаг 3: Если есть сообщение об ошибке
 
 ```
 1. Прочитать текст ошибки ВНИМАТЕЛЬНО
@@ -65,8 +53,8 @@ Add-Type -AssemblyName Microsoft.VisualBasic
 ### Шаг 4: Если приложение зависает
 
 ```
-1. Проверить CPU usage — если > 5%持续增长 → бесконечный цикл
-2. Проверить SizeChanged/Laoded обработчики на рекурсию
+1. Проверить CPU usage — если высокий → бесконечный цикл
+2. Проверить обработчики событий на рекурсию
 3. Откатить последнее изменение
 ```
 
@@ -76,12 +64,9 @@ Add-Type -AssemblyName Microsoft.VisualBasic
 
 | ❌ Нельзя | ✅ Вместо этого |
 |-----------|-----------------|
-| Менять StaticResource на HEX в ControlTemplate (App.xaml) | Использовать StaticResource как есть |
-| Добавлять LinearGradientBrush с GradientStop Color={StaticResource} | Использовать прямые HEX в LinearGradientBrush |
-| Удалять Window.Resources (Storyboard, DataTemplate) | Не трогать Window.Resources |
-| Добавлять SizeChanged → ApplyClip() без теста | Тестировать после каждого изменения |
-| Менять больше 1 файла за раз без проверки | 1 файл → сборка → запуск → проверка |
-| Делать изменения без git commit | Сначала commit, потом изменение |
+| [Плохая_практика_1] | [Хорошая_практика_1] |
+| [Плохая_практика_2] | [Хорошая_практика_2] |
+| [Плохая_практика_3] | [Хорошая_практика_3] |
 
 ---
 
@@ -89,25 +74,23 @@ Add-Type -AssemblyName Microsoft.VisualBasic
 
 ```bash
 # 1. Сборка
-dotnet build
+[КОМАНДА_СБОРКИ]
 # Если ошибка → ОТМЕНИТЬ изменения
 
 # 2. Запуск
-cd bin\Debug\net7.0-windows && start GhostBrowser.exe
-timeout 5
+[КОМАНДА_ЗАПУСКА]
 
 # 3. Проверка
-tasklist | findstr GhostBrowser
-powershell -Command "Get-Process | Where-Object {$_.ProcessName -like '*Ghost*'} | Select-Object Id, MainWindowTitle, MainWindowHandle"
+[КОМАНДА_ПРОВЕРКИ_ПРОЦЕССА]
 
-# 4. Если MainWindowHandle = 0 → ПРОВАЛ → откат
+# 4. Если не работает → ПРОВАЛ → откат
 ```
 
 ---
 
 ## 📌 Чек-лист перед изменением
 
-- [ ] Я сделал git commit текущего состояния
+- [ ] Я сделал commit текущего состояния
 - [ ] Я знаю какой файл меняю (МАКСИМУМ 1 файл за раз)
 - [ ] Я знаю как проверить что работает
 - [ ] Я знаю как отменить изменения если сломается
@@ -117,10 +100,10 @@ powershell -Command "Get-Process | Where-Object {$_.ProcessName -like '*Ghost*'}
 
 ## 📌 Чек-лист после изменения
 
-- [ ] dotnet build — успешно
-- [ ] MainWindowHandle != 0
+- [ ] [КОМАНДА_СБОРКИ] — успешно
+- [ ] Приложение запускается
 - [ ] Окно видимо и реагирует на ввод
-- [ ] Нет MessageBox с ошибкой
+- [ ] Нет сообщений об ошибке
 - [ ] Обновил changelog.md
 - [ ] git commit -m "описание изменений"
 
@@ -139,8 +122,8 @@ git push origin main
 ```bash
 git checkout HEAD -- .  # отменить все изменения
 git clean -fd           # удалить новые файлы
-rmdir /s /q bin obj     # очистить кэш
-dotnet restore && dotnet build
+rmdir /s /q bin obj     # очистить кэш (если нужно)
+[КОМАНДА_СБОРКИ]
 ```
 
 ---
